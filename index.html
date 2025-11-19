@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VintageHub — Coming Soon</title>
+  <style>
+    :root{--bg:#0b0b0b;--fg:#f6f2eb;--accent:#c59b45;--muted:#bdb5a8}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{background:linear-gradient(180deg,#070707 0%, var(--bg) 100%);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{max-width:880px;width:100%;border-radius:12px;padding:40px;box-shadow:0 10px 30px rgba(0,0,0,.6);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:center}
+    @media (max-width:880px){.card{grid-template-columns:1fr;padding:28px} .right{order:2;margin-top:18px}}
+    h1{font-size:34px;margin:0 0 8px;letter-spacing:0.6px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .logo{display:flex;align-items:center;gap:12px}
+    .badge{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#b58632);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+    .form{background:rgba(255,255,255,0.02);padding:18px;border-radius:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+    input[type="text"], input[type="email"]{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--fg);outline:none}
+    .row{display:flex;gap:8px}
+    .row input{flex:1}
+    button{margin-top:12px;width:100%;padding:12px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),#b58632);color:#081010;font-weight:700;cursor:pointer}
+    .muted{font-size:13px;color:var(--muted);margin-top:10px}
+    footer{grid-column:1/-1;margin-top:10px;color:var(--muted);font-size:13px}
+    a.inline{color:var(--accent);text-decoration:none}
+    .center{display:flex;flex-direction:column;gap:8px}
+    .right{min-width:300px}
+    .success{background:linear-gradient(180deg, rgba(40,80,60,0.18), rgba(40,80,60,0.06));padding:12px;border-radius:8px;color:#cfeedd}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <section class="left">
+      <div class="logo">
+        <div class="badge">V</div>
+        <div>
+          <h1>VintageHub</h1>
+          <p class="lead">Discover rare vintage treasures — launching soon. Join the waiting list to get early access and exclusive offers.</p>
+        </div>
+      </div>
+
+      <div style="margin-top:18px">
+        <h3 style="margin:0 0 6px">Why join?</h3>
+        <p class="muted">Early subscribers get first access to new collections, special discounts, and curated drops. We respect your privacy and only send occasional, relevant updates.</p>
+      </div>
+
+      <div style="margin-top:18px">
+        <h3 style="margin:0 0 6px">Contact</h3>
+        <p class="muted">For inquiries: <a class="inline" href="mailto:jemashope@gmail.com">jemashope@gmail.com</a></p>
+      </div>
+
+    </section>
+
+    <aside class="right">
+      <div class="form">
+        <form id="subscribeForm" onsubmit="return submitForm(event)">
+          <label for="name">Name (optional)</label>
+          <input id="name" name="name" type="text" placeholder="Your name">
+
+          <label for="email" style="margin-top:12px">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@domain.com" required>
+
+          <button type="submit">Notify Me</button>
+
+          <div id="status" class="muted" style="margin-top:10px">We'll never share your email. Unsubscribe anytime.</div>
+        </form>
+
+        <div id="thanks" style="display:none;margin-top:12px" class="success">Thanks — you're on the list! We'll email you when we launch.</div>
+
+        <div style="margin-top:12px;font-size:13px;color:var(--muted)">
+          If your server isn't ready, use <a class="inline" id="mailtoLink" href="#">this fallback</a> to email <strong>jemashope@gmail.com</strong>.
+        </div>
+      </div>
+
+    </aside>
+
+    <footer>
+      <div>Privacy: We collect only name & email for the purpose of notifying subscribers. See our simple <a class="inline" href="#policy">privacy policy</a>.</div>
+    </footer>
+  </main>
+
+  <script>
+    function submitForm(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const status = document.getElementById('status');
+      const thanks = document.getElementById('thanks');
+
+      if(!email) return;
+      status.textContent = 'Saving...';
+
+      // Default: POST to /subscribe (server should accept JSON)
+      // If you don't have a backend yet, this will fail gracefully and fallback to showing the mailto link.
+      fetch('/subscribe', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({name, email, source: 'coming-soon'})
+      }).then(r => {
+        if(r.ok){
+          document.getElementById('subscribeForm').style.display = 'none';
+          thanks.style.display = 'block';
+        } else {
+          throw new Error('server');
+        }
+      }).catch(err => {
+        status.innerHTML = 'Temporary server not available. <br>Click the fallback to email us.';
+        const mailto = 'mailto:jemashope@gmail.com?subject=' + encodeURIComponent('Subscribe: ' + email) + '&body=' + encodeURIComponent('Please add me to the list. Name: ' + name + '\nEmail: ' + email);
+        document.getElementById('mailtoLink').href = mailto;
+      });
+
+      return false;
+    }
+  </script>
+
+  <!-- Minimal privacy policy anchor -->
+  <div id="policy" style="display:none">
+    <h2>Privacy</h2>
+    <p>We collect only name & email to notify you about VintageHub launches and offers. We will never sell your data. You can request removal at any time via jemashope@gmail.com.</p>
+  </div>
+</body>
+</html>
